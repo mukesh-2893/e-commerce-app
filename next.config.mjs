@@ -4,6 +4,7 @@ const nextConfig = {
   images: {
     domains: ["i.imgur.com", "picsum.photos", "openshop.uz", "placeimg.com"],
   },
+  output: "export",
   basePath: "/e-commerce-app",
   assetPrefix: "/e-commerce-app/",
 };
