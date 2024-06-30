@@ -125,7 +125,30 @@ export default function Home({ product = [] }) {
   );
 }
 
-export async function getServerSideProps() {
+// note : I have use getServerSideProps but it is giving me issue after deployed on netlify
+//        So, I use getStaticProps for now
+//        you can test with both
+
+// export async function getServerSideProps() {
+//   try {
+//     const data = await apiHandler({
+//       endpoint: "/products",
+//     });
+
+//     return {
+//       props: {
+//         product: data,
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Error fetching product:", error);
+//     return {
+//       notFound: true,
+//     };
+//   }
+// }
+
+export async function getStaticProps() {
   try {
     const data = await apiHandler({
       endpoint: "/products",
@@ -135,6 +158,7 @@ export async function getServerSideProps() {
       props: {
         product: data,
       },
+      revalidate: 10, // Regenerate the page at most every 10 seconds
     };
   } catch (error) {
     console.error("Error fetching product:", error);

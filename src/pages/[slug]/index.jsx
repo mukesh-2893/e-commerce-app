@@ -7,13 +7,11 @@ import { toast } from "react-toastify";
 import { addItem } from "@/redux/cartSlice";
 import { useDispatch } from "react-redux";
 
-const ProductPage = ({ product }) => {
+const ProductPage = ({ product = [] }) => {
   const dispatch = useDispatch();
-  // component state
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setLoading] = useState(false);
 
-  // images change function
   const navigateImage = (direction) => {
     if (direction === "next") {
       setCurrentImageIndex(
@@ -27,7 +25,6 @@ const ProductPage = ({ product }) => {
     }
   };
 
-  // cart adding function
   const addToCart = async () => {
     console.log(product);
     setLoading(true);
@@ -42,11 +39,10 @@ const ProductPage = ({ product }) => {
       dispatch(addItem(data.cartItem));
     } catch (error) {
       setLoading(null);
-      toast.error("Something went wrong!sidjfosjf");
+      toast.error("Something went wrong!");
     }
   };
 
-  // if product not found from api response (error handle)
   if (!product)
     return <div className="text-center py-4">Product not found</div>;
 
@@ -55,7 +51,6 @@ const ProductPage = ({ product }) => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-5xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* product card */}
             <div className="relative h-96">
               <Image
                 src={product.images[currentImageIndex]}
@@ -109,13 +104,11 @@ const ProductPage = ({ product }) => {
           </div>
         </div>
 
-        {/* Product Details */}
         <div className="border-t border-gray-200 mt-8 pt-8">
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">Product Details</h2>
             <ul className="list-disc pl-6">
               <li>Category: {product.category.name}</li>
-              {/* Add more details as needed */}
             </ul>
           </div>
         </div>
@@ -126,17 +119,17 @@ const ProductPage = ({ product }) => {
 
 export default ProductPage;
 
-export async function getServerSideProps({ params }) {
+export async function getStaticProps({ params }) {
   try {
     const { slug } = params;
     const data = await apiHandler({
       endpoint: `/products/${slug}`,
     });
-
     return {
       props: {
         product: data,
       },
+      revalidate: 10,
     };
   } catch (error) {
     console.error("Error fetching product:", error);
@@ -145,3 +138,50 @@ export async function getServerSideProps({ params }) {
     };
   }
 }
+
+export async function getStaticPaths() {
+  try {
+    const products = await apiHandler({
+      endpoint: "/products",
+    });
+
+    const paths = products.map((product) => ({
+      params: { slug: product.id.toString() },
+    }));
+
+    return {
+      paths,
+      fallback: "blocking", // See the documentation for more details
+    };
+  } catch (error) {
+    console.error("Error fetching paths:", error);
+    return {
+      paths: [],
+      fallback: false,
+    };
+  }
+}
+
+// note : I have use getServerSideProps but it is giving me issue after deployed on netlify
+//        So, I use getStaticProps for now
+//        you can test with both
+
+// export async function getServerSideProps({ params }) {
+//   try {
+//     const { slug } = params;
+//     const data = await apiHandler({
+//       endpoint: `/products/${slug}`,
+//     });
+
+//     return {
+//       props: {
+//         product: data,
+//       },
+//     };
+//   } catch (error) {
+//     console.error("Error fetching product:", error);
+//     return {
+//       notFound: true,
+//     };
+//   }
+// }
